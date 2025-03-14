@@ -1,4 +1,4 @@
 variable "nsg" {}
 variable "rule" {
-  
+
 }
