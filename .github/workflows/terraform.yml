@@ -1,14 +1,17 @@
-name: 'Terraform Deployment on Azure'
+name: 'Terraform'
 
 on:
-  workflow_dispatch:  # Allows manual trigger from GitHub Actions UI
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 permissions:
   contents: read
 
 jobs:
-  terraform:
-    name: 'Terraform Deployment on Azure'
+  terraform-dev:
+    name: 'Terraform - Dev'
     runs-on: ubuntu-latest
     environment: production
 
@@ -17,36 +20,42 @@ jobs:
         shell: bash
 
     steps:
-    - name: Checkout Repository
+    - name: Checkout
       uses: actions/checkout@v4
-
-    # ✅ Authenticate with Azure using AZURE_CREDENTIALS secret
+      
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # ✅ Initialize Terraform (Includes Modules)
-    - name: Initialize Terraform with Modules
-      run: terraform init -reconfigure
-      working-directory: ./env/dev # ✅ Set working directory
+    - name: 'Terraform Setup'
+      uses: hashicorp/setup-terraform@v1
 
-    # ✅ Validate Terraform Configuration
-    - name: Validate Terraform Configuration
-      run: terraform validate
-      working-directory: ./env/dev  # ✅ Set working directory
+    - name: 'Terraform Init'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: latest
+        tf_actions_subcommand: 'init'
+        tf_actions_working_dir: "./env/dev"
 
-    # ✅ Format Check
-    - name: Terraform Format Check
-      run: terraform fmt -check
-      working-directory: ./env/dev  # ✅ Set working directory
+    - name: 'Terraform Validate'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: latest
+        tf_actions_subcommand: 'validate'
+        tf_actions_working_dir: "./env/dev"
 
-    # ✅ Generate Terraform Plan
-    - name: Terraform Plan
-      run: terraform plan -input=false -out=tfplan
-      working-directory: ./env/dev  # ✅ Set working directory
+    - name: 'Terraform Plan'
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: latest
+        tf_actions_subcommand: 'plan'
+        tf_actions_working_dir: "./env/dev"
 
-    # ✅ Apply Terraform (if plan exists)
-    - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
-      working-directory: ./env/dev  # ✅ Set working directory
+    - name: 'Terraform Apply'
+      if: "github.ref == 'refs/heads/main'"
+      uses: hashicorp/terraform-github-actions@master
+      with:
+        tf_actions_version: latest
+        tf_actions_subcommand: 'apply'
+        tf_actions_working_dir: "./env/dev"
