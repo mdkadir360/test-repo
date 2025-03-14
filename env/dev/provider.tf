@@ -7,6 +7,6 @@ terraform {
     resource_group_name  = "delete-mt-karna"
     storage_account_name = "kadirst0325"
     container_name       = "con"
-    key                  = "prod.terraform.tfstate"
+    key                  = "git.terraform.tfstate"
   }
 }
