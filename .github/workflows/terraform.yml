@@ -1,0 +1,42 @@
+name: 'Terraform Deployment on Azure'
+
+on:
+  workflow_dispatch:  # Allows manual trigger from GitHub Actions UI
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Deployment on Azure'
+    runs-on: ubuntu-latest
+    environment: production
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    # ✅ Authenticate with Azure using AZURE_CREDENTIALS secret
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Initialize Terraform
+      run: terraform init
+
+    - name: Validate Terraform Configuration
+      run: terraform validate
+
+    - name: Terraform Format Check
+      run: terraform fmt -check
+
+    - name: Terraform Plan
+      run: terraform plan -input=false
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve -input=false
