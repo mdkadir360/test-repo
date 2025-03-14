@@ -22,12 +22,21 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+
+    # ✅ Install Azure CLI before login
+    - name: Install Azure CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y azure-cli
+        az version  # Check if Azure CLI is installed
+
+    # ✅ Authenticate to Azure
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    # ✅ Install Terraform CLI
     - name: 'Terraform Setup'
       uses: hashicorp/setup-terraform@v1
 
